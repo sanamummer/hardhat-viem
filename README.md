@@ -1,67 +1,59 @@
-# Hardhat Viem Starter
-Hardhat, Viem, Typescript, mocha test env., Smart Contracts development, testing and
-deployment.
+1. Clone and install necessary dependencies
 
-### Installation
-```bash
-# Install hardhat shorthand (Instead of writting full npx hardhat, you can just use `hh`)
-npm install --global hardhat-shorthand
-hh help
-hh compile 
-hh clean
-hh watch
-
-# To deploy smart contract to ganache
-npx hardhat run scripts/deploy.ts --network ganache
-
-#Create a new folder (e.g hardhat-viem-starter)
-npx hardhat init
-- Create a TypeScript project (with Viem)
-#Done
+```jsx
+git clone https://github.com/BuildBearLabs/Hardhat-Viem.git
+cd Hardhat-Viem
+npm install
 ```
 
-### Hardhat Watcher and deployment settings
-```javascript
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
-import 'hardhat-watcher'
+1. To install hardhat-viem, run
 
-const config: HardhatUserConfig = {
-  solidity: "0.8.19",
-  networks: {
-    hardhat: {
-      chainId: 1337,
-    },
-    ganache: {
-      url: "HTTP://127.0.0.1:7545",
-      accounts: [
-        `0xfa709f51f4f14e3740a9e6c82a1dc983a27b28c4bfb7f41c6789aa87ebc508ea`,
-      ],
-    }
-  },
-  paths: {
-    artifacts: "./artifacts",
-  },
-  watcher: {
-    compilation: {
-      tasks: ['compile'],
-      files: ['./contracts'],
-      ignoredFiles: ['**/.vscode'],
-      verbose: true,
-      clearOnStart: true,
-      start: 'echo Running my compilation task now..',
-    },
-    ci: {
-      tasks: [
-        'clean',
-        { command: 'compile', params: { quiet: true } }
-      ],
-    },
-  },
-
-
-};
-
-export default config;
+```jsx
+npm install @nomicfoundation/hardhat-viem
 ```
 
+1. Add the plugin to your hardhat config file
+
+```jsx
+require("@nomicfoundation/hardhat-viem");
+```
+
+1. Create a [SandBox](https://home.buildbear.io/), copy and paste the RPC URL to the config file under the buildbear network.
+2. Use the script for deploying Smart Contract using viem
+
+```jsx
+import { formatEther, parseEther } from "viem";
+import hre from "hardhat";
+
+async function main() {
+  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
+  const unlockTime = BigInt(currentTimestampInSeconds + 60);
+
+  const lockedAmount = parseEther("0.001");
+
+  const lock = await hre.viem.deployContract("Lock", [unlockTime], {
+    value: lockedAmount,
+  });
+
+  console.log(
+    `Lock with ${formatEther(
+      lockedAmount
+    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
+  );
+}
+
+// We recommend this pattern to be able to use async/await everywhere
+// and properly handle errors.
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+```
+
+1. To deploy contract, run
+
+```jsx
+npx hardhat run scripts/deploy.ts --network buildbear
+```
+
+Congratulations! We just deployed smart contract using hardhat-viem plugin. See transaction details by navigating to the BuildBear explorer.
